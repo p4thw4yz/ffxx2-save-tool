@@ -1,0 +1,25 @@
+# Personal save data / working directories - never commit real saves
+python/input/
+python/output/
+python/JKSV/
+python/og from switch/
+python/notes.md
+
+# Python
+python/__pycache__/
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Old ad-hoc release snapshots (superseded by git history / GitHub Releases)
+*.zip
+
+# Dev-only correctness-check fixtures (derived from real saves, regenerated locally - see typescript/README.md)
+typescript/scripts/ref_*.json
+typescript/scripts/ref_*.bin
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
