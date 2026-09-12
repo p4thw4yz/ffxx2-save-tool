@@ -8,6 +8,7 @@ import { renderFieldsTab } from "./ui/fieldsTab";
 import { renderStoryTab } from "./ui/storyTab";
 import { renderExportTab } from "./ui/exportTab";
 import { renderHexTab } from "./ui/hexTab";
+import { buildStatsTab } from "./ui/statsTab";
 import { renderInfoTab } from "./ui/infoTab";
 
 const appRoot = document.getElementById("app")!;
@@ -35,6 +36,7 @@ function renderDataTabs(): void {
   renderStoryTab(shell.tabPanels.story);
   renderExportTab(shell.tabPanels.export);
   renderHexTab(shell.tabPanels.hex);
+  buildStatsTab(shell.tabPanels.stats, state.saveData, () => notifyStateChange());
 }
 
 onStateChange(renderDataTabs);

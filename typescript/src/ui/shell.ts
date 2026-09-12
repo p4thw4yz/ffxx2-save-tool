@@ -23,6 +23,7 @@ const TABS: TabDef[] = [
   { id: "story", label: "Story Position" },
   { id: "export", label: "Export" },
   { id: "hex", label: "Raw / Hex" },
+  { id: "stats", label: "Stats Editor" },
   { id: "info", label: "Info" },
 ];
 
