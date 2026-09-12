@@ -1,4 +1,0 @@
-name = "ffx-save-tool"
-
-[env.production]
-name = "ffx-save-tool"
