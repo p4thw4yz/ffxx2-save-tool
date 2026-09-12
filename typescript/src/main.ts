@@ -12,6 +12,7 @@ import { buildStatsTab } from "./ui/statsTab";
 import { renderInfoTab } from "./ui/infoTab";
 
 const appRoot = document.getElementById("app")!;
+console.log("FFX/FFX2 Save Tool loaded");
 const shell = buildShell(appRoot);
 
 function guessGame(size: number): GameKey {
