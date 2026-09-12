@@ -1,15 +1,4 @@
 name = "ffx-save-tool"
-type = "javascript"
-main = "src/index.ts"
-compatibility_date = "2025-02-01"
 
 [env.production]
 name = "ffx-save-tool"
-
-[build]
-command = "cd typescript && npm install && npm run build"
-cwd = "./"
-watch_paths = ["typescript/src/**/*.ts", "typescript/src/**/*.css"]
-
-[build.upload]
-dir = "typescript/dist"
