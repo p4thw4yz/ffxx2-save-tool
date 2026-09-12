@@ -5,8 +5,8 @@ compatibility_date = "2026-09-12"
 command = "cd typescript && npm install && npm run build"
 cwd = "."
 
-[build.upload]
-dir = "typescript/dist"
+[assets]
+directory = "typescript/dist"
 
 [env.production]
 name = "ffxx2-save-tool"
