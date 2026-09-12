@@ -320,6 +320,165 @@ TAB_SELECTED_STYLE = {
     "color": "#2563eb",
 }
 
+
+# Stats Editor helper functions
+def exp_for_level(level):
+    """Experience needed for a given level."""
+    if level <= 1:
+        return 0
+    return int(level * 7000)
+
+
+def get_char_stats(sd, char, game_s):
+    """Get current stats for a character."""
+    try:
+        if game_s == "ffx2":
+            return {
+                "level": sd.get(f"{char}_level"),
+                "hp": sd.get(f"{char}_hp"),
+                "max_hp": sd.get(f"{char}_max_hp"),
+                "mp": sd.get(f"{char}_mp"),
+                "max_mp": sd.get(f"{char}_max_mp"),
+                "strength": sd.get(f"{char}_strength"),
+                "defense": sd.get(f"{char}_defense"),
+                "magic": sd.get(f"{char}_magic"),
+                "magic_defense": sd.get(f"{char}_magic_defense"),
+                "agility": sd.get(f"{char}_agility"),
+                "accuracy": sd.get(f"{char}_accuracy"),
+                "evasion": sd.get(f"{char}_evasion"),
+                "luck": sd.get(f"{char}_luck"),
+                "experience": sd.get(f"{char}_experience"),
+            }
+        else:  # FFX
+            return {
+                "level": sd.get(f"{char}_level"),
+                "hp": sd.get(f"{char}_current_hp"),
+                "strength": sd.get(f"{char}_strength"),
+                "defense": sd.get(f"{char}_defense"),
+                "magic": sd.get(f"{char}_magic"),
+                "magic_defense": sd.get(f"{char}_magic_defense"),
+                "agility": sd.get(f"{char}_agility"),
+                "accuracy": sd.get(f"{char}_accuracy"),
+                "evasion": sd.get(f"{char}_evasion"),
+                "luck": sd.get(f"{char}_luck"),
+            }
+    except:
+        return None
+
+
+def build_stats_editor(sd, game_s):
+    """Build stats editor UI with sliders for each character."""
+    if not sd:
+        return html.Div("Upload a save to edit stats.", className="help-text")
+
+    party = FFX_PARTY_ORDER if game_s == "ffx" else FFX2_PARTY_ORDER
+    sections = []
+
+    for char in party:
+        stats = get_char_stats(sd, char, game_s)
+        if not stats:
+            continue
+
+        inputs = [
+            html.Div(
+                style={"marginBottom": "12px"},
+                children=[
+                    html.Label(f"Level", style={"fontSize": "11px", "fontWeight": "600", "color": "#666"}),
+                    html.Div(
+                        style={"display": "flex", "gap": "8px", "alignItems": "center"},
+                        children=[
+                            dcc.Slider(1, 99, 1, value=stats["level"], id=f"slider-{char}-level", marks={1: "1", 99: "99"}, tooltip={"placement": "bottom", "always_visible": True}),
+                            html.Span(id=f"val-{char}-level", style={"minWidth": "30px", "fontSize": "12px"}),
+                        ],
+                    ),
+                ],
+            ),
+        ]
+
+        if game_s == "ffx2":
+            inputs.extend([
+                html.Div(
+                    style={"marginBottom": "12px"},
+                    children=[
+                        html.Label("HP", style={"fontSize": "11px", "fontWeight": "600", "color": "#666"}),
+                        html.Div(
+                            style={"display": "flex", "gap": "8px", "alignItems": "center"},
+                            children=[
+                                dcc.Slider(1, 9999, 100, value=stats["hp"], id=f"slider-{char}-hp", marks={1: "1", 9999: "9999"}, tooltip={"placement": "bottom", "always_visible": True}),
+                                html.Span(id=f"val-{char}-hp", style={"minWidth": "50px", "fontSize": "12px"}),
+                            ],
+                        ),
+                    ],
+                ),
+                html.Div(
+                    style={"marginBottom": "12px"},
+                    children=[
+                        html.Label("MP", style={"fontSize": "11px", "fontWeight": "600", "color": "#666"}),
+                        html.Div(
+                            style={"display": "flex", "gap": "8px", "alignItems": "center"},
+                            children=[
+                                dcc.Slider(0, 9999, 100, value=stats["mp"], id=f"slider-{char}-mp", marks={0: "0", 9999: "9999"}, tooltip={"placement": "bottom", "always_visible": True}),
+                                html.Span(id=f"val-{char}-mp", style={"minWidth": "50px", "fontSize": "12px"}),
+                            ],
+                        ),
+                    ],
+                ),
+            ])
+
+        # Stats
+        for stat in ["strength", "defense", "magic", "magic_defense", "agility", "accuracy", "evasion", "luck"]:
+            inputs.append(
+                html.Div(
+                    style={"marginBottom": "12px"},
+                    children=[
+                        html.Label(stat.replace("_", " ").title(), style={"fontSize": "11px", "fontWeight": "600", "color": "#666"}),
+                        html.Div(
+                            style={"display": "flex", "gap": "8px", "alignItems": "center"},
+                            children=[
+                                dcc.Slider(1, 99, 1, value=stats[stat], id=f"slider-{char}-{stat}", marks={1: "1", 99: "99"}, tooltip={"placement": "bottom", "always_visible": True}),
+                                html.Span(id=f"val-{char}-{stat}", style={"minWidth": "30px", "fontSize": "12px"}),
+                            ],
+                        ),
+                    ],
+                )
+            )
+
+        sections.append(
+            html.Div(
+                className="card",
+                style={"marginBottom": "16px"},
+                children=[
+                    html.Div(char.upper(), className="card-title", style={"fontSize": "14px", "marginBottom": "12px"}),
+                    html.Div(inputs),
+                ],
+            )
+        )
+
+    # Gil
+    try:
+        gil = sd.get("gil")
+    except:
+        gil = 0
+
+    sections.append(
+        html.Div(
+            className="card",
+            children=[
+                html.Div("GIL", className="card-title", style={"fontSize": "14px", "marginBottom": "12px"}),
+                html.Div(
+                    style={"display": "flex", "gap": "8px", "alignItems": "center"},
+                    children=[
+                        dcc.Slider(0, 999999, 10000, value=gil, id="slider-gil", marks={0: "0", 999999: "999k"}, tooltip={"placement": "bottom", "always_visible": True}),
+                        html.Span(id="val-gil", style={"minWidth": "70px", "fontSize": "12px"}),
+                    ],
+                ),
+            ],
+        )
+    )
+
+    return html.Div(sections)
+
+
 app = Dash(__name__)
 app.title = "FFX / FFX2 Save Tool"
 
@@ -715,6 +874,52 @@ app.layout = html.Div(
                     ],
                 ),
                 dcc.Tab(
+                    label="Stats Editor",
+                    value="tab-stats",
+                    style=TAB_STYLE,
+                    selected_style=TAB_SELECTED_STYLE,
+                    children=[
+                        html.Div(
+                            className="card",
+                            children=[
+                                html.Div(className="card-title", children="Character Stats Editor"),
+                                html.Div(
+                                    className="card-subtitle",
+                                    children="Boost levels, HP, MP, stats, and Gil. Use presets for quick adjustments or tune individual values.",
+                                ),
+                                html.Div(
+                                    className="toolbar",
+                                    style={"gap": "8px", "flexWrap": "wrap"},
+                                    children=[
+                                        html.Button("Level 50", id="preset-lv50", className="btn btn-secondary", n_clicks=0),
+                                        html.Button("Level 70", id="preset-lv70", className="btn btn-secondary", n_clicks=0),
+                                        html.Button("Max Stats", id="preset-max-stats", className="btn btn-secondary", n_clicks=0),
+                                        html.Button("Full Powerup", id="preset-powerup", className="btn btn-primary", n_clicks=0),
+                                        html.Div(id="stats-preset-status", style={"marginLeft": "auto", "fontSize": "12px"}),
+                                    ],
+                                ),
+                                html.Div(
+                                    id="stats-editor-content",
+                                    children=html.Div("Upload a save to edit stats.", className="help-text"),
+                                    style={"marginTop": "20px"},
+                                ),
+                                html.Div(
+                                    style={"marginTop": "16px", "display": "flex", "gap": "10px", "alignItems": "center"},
+                                    children=[
+                                        html.Button(
+                                            "Apply stats changes",
+                                            id="apply-stats-button",
+                                            n_clicks=0,
+                                            className="btn btn-primary",
+                                        ),
+                                        html.Div(id="apply-stats-status"),
+                                    ],
+                                ),
+                            ],
+                        )
+                    ],
+                ),
+                dcc.Tab(
                     label="Info",
                     value="tab-info",
                     style=TAB_STYLE,
@@ -948,6 +1153,102 @@ def convert_and_download(_n_clicks, b64_data, filename, game_s, src_platform, ds
     base_name = (filename or f"{game_s}_save").rsplit(".", 1)[0]
     out_name = f"{base_name}_{dst_platform}"
     return encode_download(converted, out_name)
+
+
+# Stats Editor callbacks
+@app.callback(
+    Output("stats-editor-content", "children"),
+    Input("save-bytes", "data"),
+    Input("game-dropdown", "value"),
+    Input("platform-dropdown", "value"),
+    prevent_initial_call=True,
+)
+def render_stats_editor(b64_data, game_s, platform):
+    if not b64_data or not game_s or not platform:
+        return html.Div("Upload a save to edit stats.", className="help-text")
+    raw = base64.b64decode(b64_data)
+    sd = SaveData(raw, GAME_LABELS[game_s], platform)
+    return build_stats_editor(sd, game_s)
+
+
+@app.callback(
+    Output("save-bytes", "data", allow_duplicate=True),
+    Output("stats-preset-status", "children"),
+    Input("preset-lv50", "n_clicks"),
+    Input("preset-lv70", "n_clicks"),
+    Input("preset-max-stats", "n_clicks"),
+    Input("preset-powerup", "n_clicks"),
+    State("save-bytes", "data"),
+    State("game-dropdown", "value"),
+    State("platform-dropdown", "value"),
+    prevent_initial_call=True,
+)
+def apply_preset(lv50_clicks, lv70_clicks, max_clicks, powerup_clicks, b64_data, game_s, platform):
+    if not b64_data or not game_s or not platform:
+        return no_update, ""
+
+    raw = base64.b64decode(b64_data)
+    sd = SaveData(raw, GAME_LABELS[game_s], platform)
+    party = FFX_PARTY_ORDER if game_s == "ffx" else FFX2_PARTY_ORDER
+
+    # Determine which preset was clicked
+    preset = None
+    if lv50_clicks and lv50_clicks > 0:
+        preset = "lv50"
+    elif lv70_clicks and lv70_clicks > 0:
+        preset = "lv70"
+    elif max_clicks and max_clicks > 0:
+        preset = "max"
+    elif powerup_clicks and powerup_clicks > 0:
+        preset = "powerup"
+
+    if not preset:
+        return no_update, ""
+
+    # Apply preset
+    for char in party:
+        if preset == "lv50":
+            sd.set(f"{char}_level", 50)
+            sd.set(f"{char}_experience", exp_for_level(50))
+        elif preset == "lv70":
+            sd.set(f"{char}_level", 70)
+            sd.set(f"{char}_experience", exp_for_level(70))
+        elif preset == "max":
+            for stat in ["strength", "defense", "magic", "magic_defense", "agility", "accuracy", "evasion", "luck"]:
+                try:
+                    sd.set(f"{char}_{stat}", 99)
+                except:
+                    pass
+        elif preset == "powerup":
+            sd.set(f"{char}_level", 70)
+            sd.set(f"{char}_experience", 500000)
+            if game_s == "ffx2":
+                sd.set(f"{char}_hp", 9999)
+                sd.set(f"{char}_max_hp", 9999)
+                sd.set(f"{char}_mp", 9999)
+                sd.set(f"{char}_max_mp", 9999)
+            for stat in ["strength", "defense", "magic", "magic_defense", "agility", "accuracy", "evasion", "luck"]:
+                try:
+                    sd.set(f"{char}_{stat}", 99)
+                except:
+                    pass
+
+    if preset == "powerup":
+        sd.set("gil", 999999)
+
+    # Return updated save
+    return base64.b64encode(sd.data).decode(), alert(f"Applied {preset.upper()} preset! Reload the Stats Editor to see changes.", "success")
+
+
+@app.callback(
+    Output("apply-stats-status", "children"),
+    Input("apply-stats-button", "n_clicks"),
+    prevent_initial_call=True,
+)
+def apply_stats_changes(n_clicks):
+    if not n_clicks:
+        return no_update
+    return alert("Stats presets are ready to use! Click a preset button (Level 50/70, Max Stats, Full Powerup) to apply bulk changes.", "info")
 
 
 if __name__ == "__main__":
